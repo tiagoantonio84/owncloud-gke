@@ -1,6 +1,6 @@
 # EXECUTANDO O OWNLCOUD NO GOOGLE KUBERNETES ENGINE 
 
-## OBJETIVO
+### OBJETIVO
 Implantar o Ownlcoud, Software de Colaboração em Nuvem, no serviço gerenciado de Kubenetes do Google Cloud Platform.
 
 ### PRÉ-REQUISITO
@@ -28,7 +28,8 @@ provider "google" {
   region      = "${var.region}"
 }
 ```
-Os parâmetros que geralmente são alterados de acordo com cada ambiente (nome de recursos, tipos de instâncias, senhas, usuários, regiões e etc..) estão referênciados por meio de variáveis, no arquivo terrafor/variables.tf. E podem ser alterados de acordo com a necessidade.
+
+Os parâmetros que geralmente são alterados de acordo com cada ambiente (nome de recursos, tipos de instâncias, senhas, usuários, regiões e etc..) estão referênciados por meio de variáveis, no arquivo terrafor/variables.tf. E devem ser alterados de acordo com a necessidade.
 
 ### EXECUÇÃO DO TERRAFORM
 ```bash
@@ -53,16 +54,22 @@ No segundo comando, alterar os parâmetros do nome do cluster, zona e projeto de
 ### CONFIGURAÇÃO DOS YAML's DO KUBERNETES
 
 1. Criar uma service account no painel do Google com permissão de acesso ao CloudSQL,conforme documentação: https://cloud.google.com/sql/docs/mysql/connect-kubernetes-engine.
+
+O GCP ainda não permite acesso ao serviço gerenciado de banco de dados pela VPC. O CloudProxy, na infraestrutura do Kubernetes, é um container que roda junto com o container da aplicação (sidecar), fazendo proxy para o MySQL.
+
 2. Converter o json gerado para base64
 ```bash
 $ cat /path/to/service-account.json | base64
 ```
+
 3. Inserir o hash gerado na linha `credentials.json` do arquivo `secret-cloudsql-serviceaccount.yaml`
-4. Gerar o base64 para o login e senha desejado do owncloud e inserir no arquivo `secret-owncloud-userpass.yaml`
+
+4. Gerar o base64 para o primeiro login e senha do owncloud e inserir no arquivo `secret-owncloud-userpass.yaml`
 ```bash
 $ echo admin | base64
 $ echo password | base64
 ```
+
 5. Alterar a string de conexão do cloudproxy com o CloudSQL no arquivo `deployment-owncloud.yaml`
 ```bash
 command: ["/cloud_sql_proxy",
@@ -180,7 +187,7 @@ NAME         TYPE           CLUSTER-IP    EXTERNAL-IP    PORT(S)        AGE
 owncloud     LoadBalancer   10.3.248.89   35.199.70.75   80:31754/TCP   5m
 ```
 
-O acesso ao sistema deve ser feito pelo `EXTERNAL-IP` do service.
+O acesso ao sistema deve ser feito pelo `EXTERNAL-IP` do service (http://EXTERNAL-IP).
 
 ### CENTRALIZAÇÃO DE LOGS
 Por padrão todos os logs da solução são centralizados no Stackdriver do GCP.
