@@ -29,7 +29,7 @@ provider "google" {
 }
 ```
 
-Os parâmetros que geralmente são alterados de acordo com cada ambiente (nome de recursos, tipos de instâncias, senhas, usuários, regiões e etc..) estão referênciados por meio de variáveis, no arquivo terrafor/variables.tf. E devem ser alterados de acordo com a necessidade.
+Os parâmetros que geralmente são alterados de acordo com cada ambiente (nome de recursos, tipos de instâncias, senhas, usuários, regiões e etc..) estão referênciados por meio de variáveis, no arquivo `terraform/variables.tf`. E devem ser alterados de acordo com a necessidade.
 
 ### EXECUÇÃO DO TERRAFORM
 ```bash
