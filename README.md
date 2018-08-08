@@ -182,8 +182,6 @@ owncloud     LoadBalancer   10.3.248.89   35.199.70.75   80:31754/TCP   5m
 
 O acesso ao sistema deve ser feito pelo `EXTERNAL-IP` do service.
 
-No exemplo acima: http://35.199.70.75
-
 ### CENTRALIZAÇÃO DE LOGS
 Por padrão todos os logs da solução são centralizados no Stackdriver do GCP.
 
