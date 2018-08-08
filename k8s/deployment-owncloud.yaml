@@ -1,0 +1,73 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: owncloud 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: owncloud
+    spec:
+      containers:
+        - name: owncloud
+          image: owncloud/server:10.0
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: 80
+            periodSeconds: 5
+            timeoutSeconds: 5
+            successThreshold: 5
+            failureThreshold: 10
+          resources:
+            requests:
+              cpu: 0.2
+          env:
+           - name: OWNCLOUD_DOMAIN
+             value: localhost
+           - name: OWNCLOUD_DB_TYPE
+             value: mysql
+           - name: OWNCLOUD_DB_NAME
+             value: owncloud_db
+           - name: OWNCLOUD_DB_USERNAME
+             value: proxyuser
+           - name: OWNCLOUD_DB_PASSWORD
+             value: password
+           - name: OWNCLOUD_DB_HOST
+             value: "127.0.0.1"
+           - name: OWNCLOUD_ADMIN_USERNAME
+             valueFrom:
+               secretKeyRef:
+                 name: owncloud-admin-credentials
+                 key: username
+           - name: OWNCLOUD_ADMIN_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: owncloud-admin-credentials
+                 key: password
+           - name: OWNCLOUD_REDIS_ENABLED
+             value: "false"
+           - name: OWNCLOUD_REDIS_HOST
+             value: redis
+          volumeMounts:
+            - name: owncloud-volume
+              mountPath: /mnt/data
+        - name: cloudsql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.11
+          command: ["/cloud_sql_proxy",
+                    "-instances=google-project:us-east1:cloudsqlinstance=tcp:3306",
+                    "-credential_file=/secrets/cloudsql/credentials.json"]
+          volumeMounts:
+            - name: cloudsql-instance-credentials
+              mountPath: /secrets/cloudsql
+              readOnly: true
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: owncloud-volume
+          persistentVolumeClaim:
+            claimName: owncloud-data
